@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+<div class="container mt-5">
+    <div class="card border-danger">
+        <div class="card-header bg-danger text-white">
+            <h4>Confirmar Eliminación</h4>
+        </div>
+        <div class="card-body">
+            <p>¿Estás seguro de que deseas eliminar el siguiente producto?</p>
+            <ul class="list-group mb-3">
+                <li class="list-group-item"><strong>Nombre:</strong> {{ producto.nombre }}</li>
+                <li class="list-group-item"><strong>Marca:</strong> {{ producto.marca }}</li>
+                <li class="list-group-item"><strong>Categoría:</strong> {{ producto.categoria.nombre }}</li>
+                <li class="list-group-item"><strong>Cantidad:</strong> {{ producto.cantidad }} {{ producto.unidad_medida }}</li>
+            </ul>
+            <form method="post">
+                {% csrf_token %}
+                <a href="{% url 'lista_productos' %}" class="btn btn-secondary">Cancelar</a>
+                <button type="submit" class="btn btn-danger">Eliminar Producto</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>Historial de Cajas</h2>
+<table class="table">
+    <thead>
+        <tr>
+            <th>Usuario</th>
+            <th>Apertura</th>
+            <th>Monto Inicial</th>
+            <th>Cierre</th>
+            <th>Monto Cierre</th>
+            <th>Estado</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for caja in cajas %}
+        <tr>
+            <td>{{ caja.usuario.username }}</td>
+            <td>{{ caja.fecha_apertura }}</td>
+            <td>S/ {{ caja.monto_inicial }}</td>
+            <td>{{ caja.fecha_cierre|default:"-" }}</td>
+            <td>{{ caja.monto_cierre|default:"-" }}</td>
+            <td>{% if caja.abierta %}Abierta{% else %}Cerrada{% endif %}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

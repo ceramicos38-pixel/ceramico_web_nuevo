@@ -1,0 +1,14 @@
+<!doctype html>
+<html>
+<head><meta charset="utf-8"><title>Redirigiendo a Smart Click...</title></head>
+<body>
+  <p>Redirigiendo a Smart Click...</p>
+  <form id="scform" action="{{ url }}" method="post" target="_blank">
+    {% csrf_token %}
+    {% for k, v in params.items %}
+      <input type="hidden" name="{{ k }}" value="{{ v|escape }}">
+    {% endfor %}
+  </form>
+  <script>document.getElementById('scform').submit();</script>
+</body>
+</html>

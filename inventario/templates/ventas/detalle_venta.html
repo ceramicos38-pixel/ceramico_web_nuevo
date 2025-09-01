@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container mt-4">
+  <h2>Detalle Venta #{{ venta.id }}</h2>
+  <p><strong>Cliente:</strong> {{ venta.cliente_nombre }} ({{ venta.cliente_documento }})</p>
+  <p><strong>Fecha:</strong> {{ venta.fecha|date:"d/m/Y H:i" }}</p>
+  <p><strong>Tipo:</strong> {{ venta.get_tipo_comprobante_display }} — <strong>Comprobante ERP:</strong> {{ venta.numero_comprobante_externo }}</p>
+
+  <table class="table table-bordered">
+    <thead><tr><th>Producto</th><th>Cantidad</th><th>PU</th><th>Subtotal</th></tr></thead>
+    <tbody>
+      {% for d in detalles %}
+      <tr>
+        <td>{{ d.producto.nombre }} {% if d.producto.marca %}- {{ d.producto.marca }}{% endif %}</td>
+        <td>{{ d.cantidad }}</td>
+        <td>S/ {{ d.precio_unitario }}</td>
+        <td>S/ {{ d.subtotal }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <h4>Total: S/ {{ venta.total }}</h4>
+  <a href="{% url 'listar_ventas' %}" class="btn btn-secondary">Volver</a>
+</div>
+{% endblock %}

@@ -1,0 +1,82 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <title>Registrar Venta</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+<div class="container py-4">
+  <h2>Registrar Venta</h2>
+
+  {% if messages %}
+    {% for msg in messages %}
+      <div class="alert alert-{{ msg.tags }}">{{ msg }}</div>
+    {% endfor %}
+  {% endif %}
+
+  <form method="post">
+    {% csrf_token %}
+    <div class="row mb-3">
+      <div class="col-md-6">
+        <label>Cliente (opcional)</label>
+        <select name="cliente" class="form-select">
+          <option value="">Consumidor final</option>
+          {% for c in clientes %}
+            <option value="{{ c.id }}">{{ c.nombre }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-3">
+        <label>Tipo comprobante</label>
+        <select name="tipo" class="form-select">
+          <option value="BOLETA">Boleta</option>
+          <option value="FACTURA">Factura</option>
+          <option value="NOTA">Nota</option>
+        </select>
+      </div>
+    </div>
+
+    <p class="text-muted">Marca la casilla y ponga la cantidad (solo los marcados se procesarán).</p>
+
+    <div class="table-responsive">
+      <table class="table table-bordered table-striped">
+        <thead>
+          <tr>
+            <th>OK</th>
+            <th>Producto</th>
+            <th>Marca</th>
+            <th>Stock</th>
+            <th>Precio unit.</th>
+            <th>Cantidad</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for p in productos %}
+            <tr>
+              <td><input type="checkbox" name="producto_id" value="{{ p.id }}"></td>
+              <td>{{ p.nombre }}</td>
+              <td>{{ p.marca }}</td>
+              <td>{{ p.cantidad }}</td>
+              <td>S/ {{ p.precio|floatformat:2 }}</td>
+              <td>
+                <input type="number" name="cantidad_{{ p.id }}" value="0" min="0" step="1" class="form-control" style="width:100px;">
+              </td>
+            </tr>
+          {% empty %}
+            <tr><td colspan="6">No hay productos con stock.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <div class="d-flex justify-content-between">
+      <a href="{% url 'lista_productos' %}" class="btn btn-secondary">Volver a inventario</a>
+      <button type="submit" class="btn btn-primary">Registrar Venta</button>
+    </div>
+  </form>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

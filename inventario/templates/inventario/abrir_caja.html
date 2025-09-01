@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>Abrir Caja</h2>
+
+{% if caja_abierta %}
+    <p>Ya hay una caja abierta: {{ caja_abierta.fecha_apertura }} - Monto: S/{{ caja_abierta.monto_inicial }}</p>
+{% else %}
+<form method="post">
+    {% csrf_token %}
+    <label>Monto Inicial:</label>
+    <input type="number" name="monto_inicial" step="0.01" required>
+    <button type="submit">Abrir Caja</button>
+</form>
+{% endif %}
+{% endblock %}

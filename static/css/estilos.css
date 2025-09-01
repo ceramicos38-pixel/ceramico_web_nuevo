@@ -1,0 +1,35 @@
+:root {
+  --color-primario: #009FE3;  /* celeste Donofrio */
+  --color-secundario: #003366; /* azul fuerte */
+}
+
+/* Navbar */
+.navbar {
+  background-color: var(--color-primario) !important;
+}
+.navbar a, .navbar-brand {
+  color: white !important;
+}
+
+/* Botones */
+.btn-primary {
+  background-color: var(--color-primario);
+  border-color: var(--color-primario);
+}
+.btn-primary:hover {
+  background-color: var(--color-secundario);
+  border-color: var(--color-secundario);
+}
+
+/* Títulos */
+h1, h2, h3, h4 {
+  color: var(--color-secundario);
+}
+
+/* Links */
+a {
+  color: var(--color-primario);
+}
+a:hover {
+  color: var(--color-secundario);
+}

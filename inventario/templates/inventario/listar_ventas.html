@@ -1,0 +1,90 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4">📊 Historial de Ventas</h2>
+
+    <!-- Filtros -->
+    <form method="get" class="row g-3 mb-4">
+        <div class="col-12 col-md-3">
+            <label for="fecha_inicio" class="form-label">Desde</label>
+            <input type="date" name="fecha_inicio" id="fecha_inicio" class="form-control" value="{{ request.GET.fecha_inicio }}">
+        </div>
+        <div class="col-12 col-md-3">
+            <label for="fecha_fin" class="form-label">Hasta</label>
+            <input type="date" name="fecha_fin" id="fecha_fin" class="form-control" value="{{ request.GET.fecha_fin }}">
+        </div>
+        <div class="col-6 col-md-2 d-flex align-items-end">
+            <button type="submit" class="btn btn-primary w-100">Filtrar</button>
+        </div>
+        <div class="col-6 col-md-2 d-flex align-items-end">
+            <a href="{% url 'listar_ventas' %}" class="btn btn-secondary w-100">Limpiar</a>
+        </div>
+    </form>
+
+    <!-- Estado de caja -->
+    <div class="card mb-4 shadow-sm">
+        <div class="card-body d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center">
+            <div class="mb-2 mb-md-0">
+                <h5 class="card-title">💵 Estado de Caja</h5>
+                {% if caja_abierta %}
+                    <p class="mb-1 text-success fw-bold">
+                        Caja abierta desde {{ caja_abierta.fecha_apertura|date:"d/m/Y H:i" }}
+                    </p>
+                    <p class="mb-0">
+                        Total acumulado: 
+                        <strong class="text-primary">S/ {{ caja_abierta.total }}</strong>
+                    </p>
+                {% else %}
+                    <p class="text-danger mb-0">🚫 No hay caja abierta actualmente</p>
+                {% endif %}
+            </div>
+            <div>
+                {% if caja_abierta %}
+                    <a href="{% url 'cerrar_caja' caja_abierta.id %}" class="btn btn-danger w-100 w-md-auto mt-2 mt-md-0">
+                        🔒 Cerrar Caja
+                    </a>
+                {% else %}
+                    <a href="{% url 'abrir_caja' %}" class="btn btn-success w-100 w-md-auto mt-2 mt-md-0">
+                        🔓 Abrir Caja
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Tabla de ventas -->
+    <div class="table-responsive shadow-sm rounded">
+        <table class="table table-striped table-hover mb-0">
+            <thead class="table-dark">
+                <tr>
+                    <th>Fecha</th>
+                    <th>Cliente</th>
+                    <th>Tipo</th>
+                    <th>Total</th>
+                    <th>Opciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for venta in ventas %}
+                <tr>
+                    <td>{{ venta.fecha|date:"d/m/Y H:i" }}</td>
+                    <td>{{ venta.cliente }}</td>
+                    <td>{{ venta.tipo_comprobante }}</td>
+                    <td><strong>S/ {{ venta.total }}</strong></td>
+                    <td class="d-flex flex-column flex-md-row gap-1">
+                        <a href="{% url 'nota_venta' venta.id %}" class="btn btn-info btn-sm w-100 w-md-auto">📝 Nota</a>
+                        <a href="https://admin.tumi-soft.com/admin/auth" target="_blank" class="btn btn-success btn-sm w-100 w-md-auto">⚡ TumiSoft</a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" class="text-center text-muted">No hay ventas registradas en este período.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

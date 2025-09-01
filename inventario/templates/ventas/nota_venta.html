@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Nota de Venta</title>
+    <style>
+        body {
+            font-family: monospace;
+            font-size: 12px;
+            width: 80mm;
+            margin: 0 auto;
+        }
+        .ticket {
+            text-align: center;
+        }
+        .titulo {
+            font-size: 14px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .subtitulo {
+            font-size: 12px;
+            margin-bottom: 10px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+        }
+        th, td {
+            text-align: left;
+            padding: 2px;
+        }
+        th {
+            border-bottom: 1px dashed #000;
+        }
+        tfoot td {
+            border-top: 1px dashed #000;
+            font-weight: bold;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 10px;
+            font-size: 11px;
+        }
+        @media print {
+            body {
+                margin: 0;
+            }
+            .no-print {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="ticket">
+        <div class="titulo">MULTICERAMICOS DIVINO SEÑOR</div>
+        <div class="subtitulo">RUC: 20610735712</div>
+        <div class="subtitulo">Nota de Venta</div>
+
+        <!-- Número de Venta -->
+        <p><strong>N° Venta:</strong> {{ sale.numero_venta }}</p>
+
+        <p><strong>Cliente:</strong> {{ sale.cliente.nombre }}</p>
+        <p><strong>Comprobante:</strong> {{ sale.tipo_comprobante }}</p>
+        <p><strong>Fecha:</strong> {{ sale.fecha|date:"d/m/Y H:i" }}</p>
+        
+        <table>
+            <thead>
+                <tr>
+                    <th>Prod</th>
+                    <th>Cant</th>
+                    <th>P.U.</th>
+                    <th>Subt</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in items %}
+                <tr>
+                    <td>{{ item.producto.nombre|slice:":10" }}</td>
+                    <td>{{ item.cantidad|floatformat:2 }}</td>
+                    <td>{{ item.precio|floatformat:2 }}</td>
+                    <td>{{ item.subtotal|floatformat:2 }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+            <tfoot>
+                <tr>
+                    <td colspan="3">TOTAL</td>
+                    <td>S/. {{ total|floatformat:2 }}</td>
+                </tr>
+            </tfoot>
+        </table>
+
+        <div class="footer">
+            ¡Gracias por su compra!
+        </div>
+    </div>
+
+    <div class="no-print" style="margin-top:15px; text-align:center;">
+        <button onclick="window.print()">🖨️ Imprimir Ticket</button>
+        <a href="{% url 'registrar_venta' %}" class="btn">← Nueva Venta</a>
+    </div>
+</body>
+</html>
