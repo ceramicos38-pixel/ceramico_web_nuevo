@@ -3,33 +3,25 @@ from decimal import Decimal
 import os
 import dj_database_url
 
-# --------------------------
-# BASE DEL PROYECTO
-# --------------------------
+# Base del proyecto
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# --------------------------
-# CONSTANTES ADICIONALES
-# --------------------------
+# Constantes adicionales
 TAX_RATE = Decimal('0.18')  # IGV = 18%
 SMARTCLICK_URL = 'https://your-smartclick-url.example/emit'
 SMARTCLICK_METHOD = 'GET'
 SMARTCLICK_API_KEY = ''
 
-# --------------------------
-# CLAVE SECRETA Y DEBUG
-# --------------------------
+# Clave secreta
 SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'evelyn2025')
-DEBUG = os.getenv("DJANGO_DEBUG", "True") == "True"
 
-# --------------------------
-# HOSTS PERMITIDOS
-# --------------------------
+# Debug desactivado en producción
+DEBUG = os.getenv('DJANGO_DEBUG', 'False') == 'True'
+
+# Hosts permitidos
 ALLOWED_HOSTS = os.environ.get("DJANGO_ALLOWED_HOSTS", "localhost,127.0.0.1").split(",")
 
-# --------------------------
-# APLICACIONES INSTALADAS
-# --------------------------
+# Aplicaciones instaladas
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -45,9 +37,7 @@ INSTALLED_APPS = [
     'widget_tweaks',
 ]
 
-# --------------------------
-# MIDDLEWARE
-# --------------------------
+# Middleware
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
@@ -59,15 +49,10 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-# --------------------------
-# URLS Y WSGI
-# --------------------------
+# URLs
 ROOT_URLCONF = 'ceramico_web.urls'
-WSGI_APPLICATION = 'ceramico_web.wsgi.application'
 
-# --------------------------
-# TEMPLATES
-# --------------------------
+# Templates
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
@@ -84,22 +69,22 @@ TEMPLATES = [
     },
 ]
 
-# --------------------------
-# BASE DE DATOS (Render/PostgreSQL)
-# --------------------------
-# BASE DE DATOS
+# WSGI
+WSGI_APPLICATION = 'ceramico_web.wsgi.application'
+
+# Base de datos PostgreSQL (Render)
 DATABASES = {
     "default": dj_database_url.config(
-        default=os.environ.get("DATABASE_URL", f"sqlite:///{BASE_DIR / 'db.sqlite3'}"),
+        default=os.environ.get("DATABASE_URL", "postgres://user:password@localhost:5432/dbname"),
         conn_max_age=600,
-        ssl_require=False  # solo para SQLite local
+        ssl_require=True
     )
 }
 
+# Límite para carga masiva de Excel/CSV
+DATA_UPLOAD_MAX_NUMBER_FIELDS = 10000
 
-# --------------------------
-# VALIDACIÓN DE CONTRASEÑAS
-# --------------------------
+# Validación de contraseñas
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
     {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator'},
@@ -107,40 +92,29 @@ AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
 ]
 
-# --------------------------
-# LOCALIZACIÓN
-# --------------------------
+# Localización
 LANGUAGE_CODE = 'es'
 TIME_ZONE = 'America/Bogota'
 USE_I18N = True
 USE_TZ = True
 
-# --------------------------
-# ARCHIVOS ESTÁTICOS
-# --------------------------
+# Archivos estáticos (CSS, JS, imágenes)
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [BASE_DIR / "static"]
 STATIC_ROOT = BASE_DIR / "staticfiles"
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
-# --------------------------
-# ARCHIVOS MEDIA
-# --------------------------
+# Archivos media (subidas de usuarios)
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / "media"
 
-# --------------------------
-# CONFIGURACIÓN ADICIONAL
-# --------------------------
+# Configuración adicional
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# --------------------------
-# LOGIN / LOGOUT
-# --------------------------
+# Rutas de login/logout
 LOGIN_URL = '/login/'
 LOGOUT_REDIRECT_URL = '/login/'
 
-# --------------------------
-# LÍMITE PARA SUBIDAS MASIVAS
-# --------------------------
-DATA_UPLOAD_MAX_NUMBER_FIELDS = 10000
+# Configuración para Render
+if "RENDER_EXTERNAL_HOSTNAME" in os.environ:
+    ALLOWED_HOSTS.append(os.environ["RENDER_EXTERNAL_HOSTNAME"])
