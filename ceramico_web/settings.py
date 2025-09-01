@@ -17,7 +17,7 @@ TOMISOFT_API_KEY = os.getenv("TOMISOFT_API_KEY", "")
 SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'evelyn2025')
 
 # Debug desactivado en producción
-DEBUG = 'True'
+DEBUG = 'False'
 
 # Hosts permitidos
 ALLOWED_HOSTS = os.environ.get(
@@ -78,14 +78,13 @@ TEMPLATES = [
 WSGI_APPLICATION = 'ceramico_web.wsgi.application'
 
 # Base de datos PostgreSQL (Render)
-# Base de datos para desarrollo local
-if not os.environ.get("DATABASE_URL"):
-    DATABASES = {
-        "default": {
-            "ENGINE": "django.db.backends.sqlite3",
-            "NAME": BASE_DIR / "db.sqlite3",
-        }
-    }
+DATABASES = {
+    "default": dj_database_url.config(
+        default=os.environ.get("DATABASE_URL"),
+        conn_max_age=600,
+        ssl_require=True
+    )
+}
 
 
 # Límite para carga masiva de Excel/CSV
