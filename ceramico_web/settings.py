@@ -17,7 +17,7 @@ TOMISOFT_API_KEY = os.getenv("TOMISOFT_API_KEY", "")
 SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'evelyn2025')
 
 # Debug desactivado en producción
-DEBUG = 'False'
+DEBUG = os.getenv('DJANGO_DEBUG', 'False') == 'True'
 
 # Hosts permitidos
 ALLOWED_HOSTS = os.environ.get(
@@ -77,14 +77,13 @@ TEMPLATES = [
 # WSGI
 WSGI_APPLICATION = 'ceramico_web.wsgi.application'
 
-# Base de datos PostgreSQL (Render)
 DATABASES = {
     "default": dj_database_url.config(
         default=os.environ.get("DATABASE_URL"),
         conn_max_age=600,
         ssl_require=True
-    )
-}
+ 
+
 
 
 # Límite para carga masiva de Excel/CSV
