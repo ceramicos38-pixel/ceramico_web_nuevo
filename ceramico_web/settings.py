@@ -8,18 +8,23 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Constantes adicionales
 TAX_RATE = Decimal('0.18')  # IGV = 18%
-SMARTCLICK_URL = 'https://your-smartclick-url.example/emit'
-SMARTCLICK_METHOD = 'GET'
-SMARTCLICK_API_KEY = ''
+TOMISOFT_URL = 'https://admin.tumi-soft.com/admin/sales/v2/vouchers'
+TOMISOFT_METHOD = 'POST'  # si vas a enviar datos
+TOMISOFT_API_KEY = os.getenv("TOMISOFT_API_KEY", "")
+
 
 # Clave secreta
 SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'evelyn2025')
 
 # Debug desactivado en producción
-DEBUG = os.getenv('DJANGO_DEBUG', 'False') == 'True'
+DEBUG = 'True'
 
 # Hosts permitidos
-ALLOWED_HOSTS = os.environ.get("DJANGO_ALLOWED_HOSTS", "localhost,127.0.0.1").split(",")
+ALLOWED_HOSTS = os.environ.get(
+    "DJANGO_ALLOWED_HOSTS", 
+    "localhost,127.0.0.1,ceramico-web.onrender.com"
+).split(",")
+
 
 # Aplicaciones instaladas
 INSTALLED_APPS = [
@@ -73,13 +78,15 @@ TEMPLATES = [
 WSGI_APPLICATION = 'ceramico_web.wsgi.application'
 
 # Base de datos PostgreSQL (Render)
-DATABASES = {
-    "default": dj_database_url.config(
-        default=os.environ.get("DATABASE_URL", "postgres://user:password@localhost:5432/dbname"),
-        conn_max_age=600,
-        ssl_require=True
-    )
-}
+# Base de datos para desarrollo local
+if not os.environ.get("DATABASE_URL"):
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": BASE_DIR / "db.sqlite3",
+        }
+    }
+
 
 # Límite para carga masiva de Excel/CSV
 DATA_UPLOAD_MAX_NUMBER_FIELDS = 10000
