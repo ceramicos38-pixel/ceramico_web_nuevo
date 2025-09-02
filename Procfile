@@ -1,2 +1,1 @@
-web: gunicorn ceramico_web\ceramico_web.wsgi
-
+web: gunicorn ceramico_web.wsgi --log-file -

@@ -3,30 +3,37 @@ from decimal import Decimal
 import os
 import dj_database_url
 
-# Base del proyecto
+# -----------------------------
+# BASE DEL PROYECTO
+# -----------------------------
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# Constantes adicionales
+# -----------------------------
+# CONSTANTES ADICIONALES
+# -----------------------------
 TAX_RATE = Decimal('0.18')  # IGV = 18%
 TOMISOFT_URL = 'https://admin.tumi-soft.com/admin/sales/v2/vouchers'
-TOMISOFT_METHOD = 'POST'  # si vas a enviar datos
+TOMISOFT_METHOD = 'POST'
 TOMISOFT_API_KEY = os.getenv("TOMISOFT_API_KEY", "")
 
-
-# Clave secreta
+# -----------------------------
+# CONFIGURACIÓN DE SEGURIDAD
+# -----------------------------
 SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'evelyn2025')
-
-# Debug desactivado en producción
 DEBUG = os.getenv('DJANGO_DEBUG', 'False') == 'True'
 
-# Hosts permitidos
 ALLOWED_HOSTS = os.environ.get(
-    "DJANGO_ALLOWED_HOSTS", 
+    "DJANGO_ALLOWED_HOSTS",
     "localhost,127.0.0.1,ceramico-web.onrender.com"
 ).split(",")
 
+# Agregar hostname de Render automáticamente
+if "RENDER_EXTERNAL_HOSTNAME" in os.environ:
+    ALLOWED_HOSTS.append(os.environ["RENDER_EXTERNAL_HOSTNAME"])
 
-# Aplicaciones instaladas
+# -----------------------------
+# APLICACIONES INSTALADAS
+# -----------------------------
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -35,14 +42,16 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
-    # tu app
+    # Aplicaciones propias
     'inventario',
 
-    # terceros
+    # Terceros
     'widget_tweaks',
 ]
 
-# Middleware
+# -----------------------------
+# MIDDLEWARE
+# -----------------------------
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
@@ -54,10 +63,15 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-# URLs
+# -----------------------------
+# URLs Y WSGI
+# -----------------------------
 ROOT_URLCONF = 'ceramico_web.urls'
+WSGI_APPLICATION = 'ceramico_web.wsgi.application'
 
-# Templates
+# -----------------------------
+# TEMPLATES
+# -----------------------------
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
@@ -74,22 +88,26 @@ TEMPLATES = [
     },
 ]
 
-# WSGI
-WSGI_APPLICATION = 'ceramico_web.wsgi.application'
+# -----------------------------
+# BASE DE DATOS
+# -----------------------------
+DATABASE_URL = os.environ.get('DATABASE_URL')
 
-DATABASES = {
-    "default": dj_database_url.config(
-        default=os.environ.get("DATABASE_URL"),
-        conn_max_age=600,
-        ssl_require=True
- 
+if DATABASE_URL:
+    DATABASES = {
+        'default': dj_database_url.parse(DATABASE_URL, conn_max_age=600)
+    }
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
 
-
-
-# Límite para carga masiva de Excel/CSV
-DATA_UPLOAD_MAX_NUMBER_FIELDS = 10000
-
-# Validación de contraseñas
+# -----------------------------
+# VALIDACIÓN DE CONTRASEÑAS
+# -----------------------------
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
     {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator'},
@@ -97,29 +115,33 @@ AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
 ]
 
-# Localización
+# -----------------------------
+# LOCALIZACIÓN
+# -----------------------------
 LANGUAGE_CODE = 'es'
 TIME_ZONE = 'America/Bogota'
 USE_I18N = True
 USE_TZ = True
 
-# Archivos estáticos (CSS, JS, imágenes)
+# -----------------------------
+# STATIC & MEDIA
+# -----------------------------
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [BASE_DIR / "static"]
 STATIC_ROOT = BASE_DIR / "staticfiles"
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
-# Archivos media (subidas de usuarios)
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / "media"
 
-# Configuración adicional
-DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-
-# Rutas de login/logout
+# -----------------------------
+# LOGIN/LOGOUT
+# -----------------------------
 LOGIN_URL = '/login/'
 LOGOUT_REDIRECT_URL = '/login/'
 
-# Configuración para Render
-if "RENDER_EXTERNAL_HOSTNAME" in os.environ:
-    ALLOWED_HOSTS.append(os.environ["RENDER_EXTERNAL_HOSTNAME"])
+# -----------------------------
+# AJUSTES ADICIONALES
+# -----------------------------
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+DATA_UPLOAD_MAX_NUMBER_FIELDS = 10000

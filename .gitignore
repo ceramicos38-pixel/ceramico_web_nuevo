@@ -1,21 +1,5 @@
-# Python
-__pycache__/
 *.pyc
-*.pyo
-*.pyd
-*.sqlite3
-
-# Entornos virtuales
-venv/
-env/
-
-# Archivos de logs
-*.log
-
-# Archivos estáticos compilados
-/staticfiles/
-/media/
-
-# IDEs
-.vscode/
-.idea/
+__pycache__/
+db.sqlite3
+.venv/
+staticfiles/
