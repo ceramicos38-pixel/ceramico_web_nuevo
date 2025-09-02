@@ -8,6 +8,13 @@ https://docs.djangoproject.com/en/5.2/howto/deployment/wsgi/
 """
 
 import os
+import sys
+
+# Ejecutar script de superusuario automáticamente
+script_path = os.path.join(os.path.dirname(__file__), 'create_superuser.py')
+if os.path.exists(script_path):
+    import runpy
+    runpy.run_path(script_path)
 
 from django.core.wsgi import get_wsgi_application
 

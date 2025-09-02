@@ -27,7 +27,6 @@ ALLOWED_HOSTS = os.environ.get(
     "localhost,127.0.0.1,ceramico-web.onrender.com"
 ).split(",")
 
-# Agregar hostname de Render automáticamente
 if "RENDER_EXTERNAL_HOSTNAME" in os.environ:
     ALLOWED_HOSTS.append(os.environ["RENDER_EXTERNAL_HOSTNAME"])
 
@@ -127,8 +126,8 @@ USE_TZ = True
 # STATIC & MEDIA
 # -----------------------------
 STATIC_URL = '/static/'
-STATICFILES_DIRS = [BASE_DIR / "static"]
-STATIC_ROOT = BASE_DIR / "staticfiles"
+STATIC_ROOT = BASE_DIR / 'staticfiles'
+STATICFILES_DIRS = [BASE_DIR / "static"]  # donde están tus archivos originales
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 MEDIA_URL = '/media/'
