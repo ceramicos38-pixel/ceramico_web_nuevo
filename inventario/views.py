@@ -25,7 +25,6 @@ from .forms import ProductoForm, SaleForm, SaleItemForm, CategoriaForm
 # IMPORTAR EXCEL DE PRODUCTOS
 # --------------------------
 @login_required
-
 def importar_excel(request):
     if request.method == "POST":
         archivo_excel = request.FILES.get("archivo")
