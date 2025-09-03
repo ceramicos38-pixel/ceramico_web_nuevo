@@ -20,22 +20,12 @@ from .forms import ProductoForm, SaleForm, SaleItemForm, CategoriaForm
 # --------------------------
 # DECORADOR ADMIN
 # --------------------------
-def solo_admin(view_func):
-    """
-    Permite acceso solo a superusuarios.
-    Redirige a 'inicio' si no es admin.
-    """
-    decorated_view_func = user_passes_test(
-        lambda u: u.is_superuser,
-        login_url='inicio'
-    )(view_func)
-    return decorated_view_func
 
 # --------------------------
 # IMPORTAR EXCEL DE PRODUCTOS
 # --------------------------
 @login_required
-@solo_admin
+
 def importar_excel(request):
     if request.method == "POST":
         archivo_excel = request.FILES.get("archivo")
@@ -86,7 +76,6 @@ def importar_excel(request):
 # EXPORTAR EXCEL DE PRODUCTOS
 # --------------------------
 @login_required
-@solo_admin
 def exportar_excel(request):
     wb = openpyxl.Workbook()
     ws = wb.active
@@ -319,7 +308,6 @@ def smartclick_redirect(request, sale_id):
 # CRUD PRODUCTOS
 # --------------------------
 @login_required
-@solo_admin
 def agregar_producto(request):
     if request.method == 'POST':
         form = ProductoForm(request.POST)
@@ -338,7 +326,6 @@ def agregar_producto(request):
     return render(request, 'inventario/agregar_producto.html', {'form': form})
 
 @login_required
-@solo_admin
 def editar_producto(request, producto_id):
     producto = get_object_or_404(Producto, id=producto_id)
     if request.method == "POST":
@@ -352,7 +339,6 @@ def editar_producto(request, producto_id):
     return render(request, 'inventario/editar_producto.html', {'form': form})
 
 @login_required
-@solo_admin
 def eliminar_producto(request, producto_id):
     producto = get_object_or_404(Producto, id=producto_id)
     nombre_producto = producto.nombre
@@ -366,7 +352,6 @@ def eliminar_producto(request, producto_id):
 # CATEGORÍAS
 # --------------------------
 @login_required
-@solo_admin
 def agregar_categoria(request):
     if request.method == 'POST':
         form = CategoriaForm(request.POST)
@@ -381,7 +366,6 @@ def agregar_categoria(request):
     return render(request, 'inventario/agregar_categoria.html', {'form': form})
 
 @login_required
-@solo_admin
 def eliminar_categoria(request, categoria_id):
     categoria = get_object_or_404(Categoria, id=categoria_id)
     if request.method == 'POST':

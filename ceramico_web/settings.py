@@ -34,7 +34,7 @@ if "RENDER_EXTERNAL_HOSTNAME" in os.environ:
 # APLICACIONES INSTALADAS
 # -----------------------------
 INSTALLED_APPS = [
-    'django.contrib.admin',
+    # 'django.contrib.admin',  # ❌ desactivamos admin
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
@@ -137,6 +137,7 @@ MEDIA_ROOT = BASE_DIR / "media"
 # LOGIN/LOGOUT
 # -----------------------------
 LOGIN_URL = '/login/'
+LOGIN_REDIRECT_URL = '/importar/'   # después de login, va directo a importar
 LOGOUT_REDIRECT_URL = '/login/'
 
 # -----------------------------
@@ -144,3 +145,11 @@ LOGOUT_REDIRECT_URL = '/login/'
 # -----------------------------
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 DATA_UPLOAD_MAX_NUMBER_FIELDS = 10000
+
+# Seguridad extra para Render
+CSRF_TRUSTED_ORIGINS = [
+    "https://*.onrender.com",
+]
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True

@@ -15,14 +15,16 @@ urlpatterns = [
     path('productos/agregar/', views.agregar_producto, name='agregar_producto'),
     path('productos/editar/<int:producto_id>/', views.editar_producto, name='editar_producto'),
     path('productos/eliminar/<int:producto_id>/', views.eliminar_producto, name='eliminar_producto'),
-    path('importar/', views.importar_excel, name='importar_excel'),
+
+    # Importar/Exportar
+    path('importar/', views.importar_excel, name='importar'),  # 👈 corregido el name
     path('exportar/', views.exportar_excel, name='exportar_excel'),
     path('categorias/eliminar/<int:categoria_id>/', views.eliminar_categoria, name='eliminar_categoria'),
 
     # -----------------------------
     # Ventas
     # -----------------------------
-    path('ventas/', ventas_views.listar_ventas, name='listar_ventas'),
+    path('ventas/', ventas_views.listar_ventas, name='ventas'),  # 👈 corregido el name
     path('ventas/nueva/', ventas_views.registrar_venta, name='registrar_venta'),
     path('ventas/smartclick/<int:sale_id>/', ventas_views.smartclick_redirect, name='smartclick_redirect'),
     path('ventas/nota/<int:sale_id>/', ventas_views.nota_venta, name='nota_venta'),
@@ -39,11 +41,4 @@ urlpatterns = [
     # API
     # -----------------------------
     path('api/producto/<int:pk>/', views.producto_api, name='producto_api'),
-
-    # -----------------------------
-    # Autenticación
-    # -----------------------------
-    path('login/', views.login_view, name='login'),
-    path('logout/', views.logout_view, name='logout'),
-    path('register/', views.register_view, name='register'),
 ]
