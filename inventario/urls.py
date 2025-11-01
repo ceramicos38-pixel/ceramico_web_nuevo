@@ -50,4 +50,7 @@ urlpatterns = [
     # API
     # -----------------------------
     path('api/producto/<int:pk>/', views.producto_api, name='producto_api'),
+
+    path('dashboard/', views.dashboard, name='dashboard'),
+
 ]

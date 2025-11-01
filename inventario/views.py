@@ -14,8 +14,60 @@ from django.utils.timezone import now
 from django.utils import timezone
 from datetime import datetime
 from django.http import HttpResponse, JsonResponse
-from .models import Producto, Categoria, Cliente, Sale, SaleItem, Caja
-from .forms import ProductoForm, SaleForm, SaleItemForm, CategoriaForm
+from .models import Producto, Categoria, Cliente, Venta, DetalleVenta, Caja
+from .forms import ProductoForm, VentaForm, DetalleVentaForm, CategoriaForm
+from django.db.models import Sum, Count
+from .models import Venta, DetalleVenta, Producto
+from datetime import date
+from django.db.models import Sum
+from django.shortcuts import render
+from .models import Venta, DetalleVenta, Producto
+from datetime import date
+from django.db.models import F, Sum, FloatField
+from datetime import date
+from .models import Venta, DetalleVenta, Producto
+
+from django.shortcuts import render
+from django.db.models import Sum
+from .models import Venta, DetalleVenta, Producto
+import json
+from datetime import date
+
+from django.shortcuts import render
+from django.db.models import Sum
+from .models import Venta, DetalleVenta, Producto
+import json
+from datetime import date
+
+def dashboard(request):
+    # Ventas hoy
+    ventas_hoy = Venta.objects.filter(fecha=date.today()).count()
+
+    # Ventas totales
+    total_ventas = Venta.objects.count()
+
+    # Productos con bajo stock
+    productos_bajo_stock = Producto.objects.filter(stock__lte=5)
+
+    # Productos más vendidos
+    detalles = (
+        DetalleVenta.objects.values('producto__nombre')
+        .annotate(total_cantidad=Sum('cantidad'))
+        .order_by('-total_cantidad')[:5]
+    )
+
+    productos = [item['producto__nombre'] for item in detalles]
+    cantidades = [float(item['total_cantidad']) for item in detalles]  # Convertir Decimal a float
+
+    context = {
+        'ventas_hoy': ventas_hoy,
+        'total_ventas': total_ventas,
+        'productos_bajo_stock': productos_bajo_stock,
+        'productos_json': json.dumps(productos),
+        'cantidades_json': json.dumps(cantidades),
+    }
+
+    return render(request, 'inventario/dashboard.html', context)
 
 # --------------------------
 # DECORADOR ADMIN
@@ -235,7 +287,7 @@ def registrar_venta(request):
             return redirect('registrar_venta')
 
         cliente_obj, _ = Cliente.objects.get_or_create(nombre=cliente_nombre)
-        venta = Sale.objects.create(cliente=cliente_obj, tipo_comprobante=tipo_comprobante, total=0)
+        venta = Venta.objects.create(cliente=cliente_obj, tipo_comprobante=tipo_comprobante, total=0)
         total_venta = Decimal("0.00")
 
         for pid, cant, prec in zip(producto_ids, cantidades, precios):
@@ -256,7 +308,7 @@ def registrar_venta(request):
             subtotal = cantidad * precio
             total_venta += subtotal
 
-            SaleItem.objects.create(sale=venta, producto=producto, cantidad=cantidad, precio=precio)
+            DetalleVenta.objects.create(sale=venta, producto=producto, cantidad=cantidad, precio=precio)
             producto.stock -= cantidad
             producto.save()
 
@@ -276,8 +328,8 @@ def registrar_venta(request):
 # --------------------------
 @login_required
 def nota_venta(request, sale_id):
-    sale = get_object_or_404(Sale, id=sale_id)
-    items = SaleItem.objects.filter(sale=sale)
+    sale = get_object_or_404(Venta, id=sale_id)
+    items = DetalleVenta.objects.filter(sale=sale)
     items_con_subtotal = []
     total = 0
     for item in items:
@@ -300,7 +352,7 @@ def nota_venta(request, sale_id):
 # --------------------------
 @login_required
 def smartclick_redirect(request, sale_id):
-    sale = get_object_or_404(Sale, id=sale_id)
+    sale = get_object_or_404(Venta, id=sale_id)
     return redirect('/ventas/')  # Ajusta según tu flujo
 
 # --------------------------

@@ -2,7 +2,6 @@ from django.db import models
 from decimal import Decimal
 from django.contrib.auth.models import User
 from django.db.models import Sum, F, FloatField
-
 # ========================
 # CAJA
 # ========================
@@ -79,7 +78,7 @@ class Producto(models.Model):
 # ========================
 # VENTAS
 # ========================
-class Sale(models.Model):
+class Venta(models.Model):
     cliente = models.ForeignKey("Cliente", on_delete=models.CASCADE)
     tipo_comprobante = models.CharField(
         max_length=50,
@@ -97,7 +96,7 @@ class Sale(models.Model):
     def save(self, *args, **kwargs):
         # Número de venta consecutivo
         if not self.numero_venta:
-            last_sale = Sale.objects.order_by('-numero_venta').first()
+            last_sale = Venta.objects.order_by('-numero_venta').first()
             self.numero_venta = 1 if not last_sale else last_sale.numero_venta + 1
 
         is_new = self.pk is None
@@ -105,7 +104,7 @@ class Sale(models.Model):
         previous_caja = None
 
         if not is_new:
-            prev = Sale.objects.get(pk=self.pk)
+            prev = Venta.objects.get(pk=self.pk)
             previous_total = prev.total
             previous_caja = prev.caja
 
@@ -148,8 +147,8 @@ class Sale(models.Model):
         return f"Venta #{self.numero_venta} - {self.cliente}"
 
 
-class SaleItem(models.Model):
-    sale = models.ForeignKey(Sale, related_name="items", on_delete=models.CASCADE)
+class DetalleVenta(models.Model):
+    sale = models.ForeignKey(Venta, related_name="items", on_delete=models.CASCADE)
     producto = models.ForeignKey("Producto", on_delete=models.CASCADE)
     cantidad = models.DecimalField(max_digits=10, decimal_places=2)  # decimal por cajas/m²
     precio = models.DecimalField(max_digits=12, decimal_places=2)

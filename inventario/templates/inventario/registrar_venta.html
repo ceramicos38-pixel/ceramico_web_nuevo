@@ -1,146 +1,267 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block content %}
-<div class="container mt-4">
+<div class="container venta-container">
+  <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-3">
+    <h1><i class="bi bi-basket2"></i> Registrar Venta</h1>
+    <button type="submit" form="venta-form" class="btn-guardar mt-2 mt-md-0">💾 Guardar Venta</button>
+  </div>
 
-    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-3">
-        <h2>Registrar Venta</h2>
-        <button type="submit" form="venta-form" class="btn btn-success mt-2 mt-md-0 w-100 w-md-auto">Registrar Venta</button>
+  <form method="post" id="venta-form">
+    {% csrf_token %}
+
+    <!-- Cliente y Comprobante -->
+    <div class="row g-3 mb-4">
+      <div class="col-12 col-md-6">
+        <label for="cliente" class="form-label">Cliente</label>
+        <input type="text" name="cliente" class="form-control" placeholder="Nombre del cliente" required>
+      </div>
+      <div class="col-12 col-md-6">
+        <label for="tipo_comprobante" class="form-label">Tipo de Comprobante</label>
+        <select name="tipo_comprobante" class="form-select" required>
+          <option value="Nota">Nota de Venta</option>
+          <option value="Boleta">Boleta</option>
+          <option value="Factura">Factura</option>
+        </select>
+      </div>
     </div>
 
-    <form method="post" id="venta-form">
-        {% csrf_token %}
+    <!-- Buscar Producto -->
+    <div class="mb-4">
+      <label for="select-producto" class="form-label">Buscar producto</label>
+      <select id="select-producto" class="form-control w-100">
+        <option value="">Buscar producto...</option>
+        {% for p in productos %}
+          <option value="{{ p.id }}"
+                  data-nombre="{{ p.nombre }}"
+                  data-marca="{{ p.marca }}"
+                  data-stock="{{ p.stock }}"
+                  data-precio-venta="{{ p.precio_venta|stringformat:".2f" }}">
+            {{ p.nombre }} - {{ p.marca }} (Stock: {{ p.stock }}) - S/. {{ p.precio_venta|stringformat:".2f" }}
+          </option>
+        {% endfor %}
+      </select>
+    </div>
 
-        <!-- Cliente y Comprobante -->
-        <div class="row g-3 mb-3">
-            <div class="col-12 col-md-6">
-                <label for="cliente" class="form-label">Nombre del Cliente</label>
-                <input type="text" name="cliente" class="form-control" required>
-            </div>
-            <div class="col-12 col-md-6">
-                <label for="tipo_comprobante" class="form-label">Tipo de Comprobante</label>
-                <select name="tipo_comprobante" class="form-control" required>
-                    <option value="Nota">Nota de Venta</option>
-                    <option value="Boleta">Boleta</option>
-                    <option value="Factura">Factura</option>
-                </select>
-            </div>
-        </div>
+    <!-- Tabla productos -->
+    <div class="table-responsive">
+      <table class="table mt-3" id="tabla-productos">
+        <thead>
+          <tr>
+            <th>Producto</th>
+            <th>Stock</th>
+            <th>Cantidad</th>
+            <th>Precio</th>
+            <th>Subtotal</th>
+            <th>Eliminar</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
 
-        <!-- Tabla productos -->
-        <h4>Productos</h4>
-        <div class="table-responsive">
-            <table class="table table-bordered mt-3" id="tabla-productos">
-                <thead class="table-light">
-                    <tr>
-                        <th>Producto</th>
-                        <th>Stock</th>
-                        <th>Cantidad</th>
-                        <th>Precio</th>
-                        <th>Subtotal</th>
-                        <th>Eliminar</th>
-                    </tr>
-                </thead>
-                <tbody></tbody>
-            </table>
-        </div>
-
-        <!-- Selector de productos -->
-        <div class="mt-3">
-            <label for="select-producto">Agregar producto al carrito:</label>
-            <select id="select-producto" class="form-control w-100">
-                <option value="">Buscar producto...</option>
-                {% for p in productos %}
-                    <option value="{{ p.id }}"
-                            data-nombre="{{ p.nombre }}"
-                            data-marca="{{ p.marca }}"
-                            data-stock="{{ p.stock }}"
-                            data-precio-venta="{{ p.precio_venta|stringformat:".2f" }}">
-                        {{ p.nombre }} - {{ p.marca }} (Stock: {{ p.stock }})
-                        S/. {{ p.precio_venta|stringformat:".2f" }}
-                    </option>
-                {% endfor %}
-            </select>
-        </div>
-
-        <!-- Total -->
-        <h4 class="mt-3">Total: S/. <span id="total">0.00</span></h4>
-    </form>
+    <!-- Total -->
+    <div class="d-flex justify-content-between align-items-center mt-4">
+      <button type="button" id="vaciar-carrito">🗑 Vaciar</button>
+      <h3>Total: <span id="total">S/. 0.00</span></h3>
+    </div>
+  </form>
 </div>
 
-<!-- Scripts -->
+<!-- Select2 & jQuery -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
+<!-- Estilos Modernos -->
+<style>
+  body {
+    background-color: #f3f6fb;
+    font-family: 'Poppins', sans-serif;
+    color: #222;
+  }
+
+  .venta-container {
+    background: #ffffff;
+    border-radius: 20px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+    padding: 30px;
+    margin-top: 40px;
+  }
+
+  h1 {
+    font-size: 2rem;
+    color: #007c91;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 700;
+  }
+
+  .btn-guardar {
+    background-color: #0097a7;
+    border: none;
+    color: #fff;
+    padding: 12px 28px;
+    border-radius: 12px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+  }
+
+  .btn-guardar:hover {
+    background-color: #007c91;
+    transform: scale(1.03);
+  }
+
+  label {
+    font-weight: 600;
+    color: #333;
+  }
+
+  input, select {
+    width: 100%;
+    padding: 10px 12px;
+    border-radius: 10px;
+    border: 1px solid #d0d7de;
+    background: #f9fafc;
+    color: #222;
+    transition: border 0.2s ease;
+  }
+
+  input:focus, select:focus {
+    border-color: #0097a7;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(0, 151, 167, 0.2);
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    border-radius: 12px;
+    overflow: hidden;
+    background: #fff;
+  }
+
+  th {
+    background: #0097a7;
+    color: #fff;
+    font-weight: 600;
+    padding: 12px;
+    text-align: center;
+  }
+
+  td {
+    padding: 10px;
+    text-align: center;
+    border-bottom: 1px solid #e5e5e5;
+  }
+
+  tr:hover td {
+    background-color: #e0f2f1;
+  }
+
+  #total {
+    color: #007c91;
+    font-weight: 700;
+    font-size: 2rem;
+  }
+
+  #vaciar-carrito {
+    background-color: #ff5252;
+    color: white;
+    padding: 10px 22px;
+    border-radius: 10px;
+    border: none;
+    font-weight: 600;
+    transition: background 0.2s;
+  }
+
+  #vaciar-carrito:hover {
+    background-color: #e53935;
+  }
+</style>
+
+<!-- JS Funcional -->
 <script>
 $(document).ready(function () {
-    // Select2 responsive
-    $('#select-producto').select2({ placeholder: "Buscar producto...", allowClear: true, width: '100%' });
+  $('#select-producto').select2({
+    placeholder: "Buscar producto...",
+    allowClear: true,
+    width: '100%'
+  });
 
-    function actualizarTotal() {
-        let total = 0;
-        $('#tabla-productos tbody tr').each(function () {
-            total += parseFloat($(this).find('.subtotal').text()) || 0;
-        });
-        $('#total').text(total.toFixed(2));
+  function actualizarTotal() {
+    let total = 0;
+    $('#tabla-productos tbody tr').each(function () {
+      total += parseFloat($(this).find('.subtotal').text()) || 0;
+    });
+    $('#total').text("S/. " + total.toFixed(2));
+  }
+
+  $('#select-producto').on('change', function () {
+    const option = $(this).find(':selected');
+    if (!option.val()) return;
+
+    const pid = option.val();
+    const nombre = option.data('nombre');
+    const marca = option.data('marca');
+    const stock = parseInt(option.data('stock'));
+    const precioVenta = parseFloat(option.data('precio-venta'));
+
+    if (stock <= 0) {
+      alert("No hay stock disponible para este producto.");
+      $(this).val(null).trigger('change');
+      return;
     }
 
-    $('#select-producto').on('change', function () {
-        const option = $(this).find(':selected');
-        if (!option.val()) return;
+    if ($('#tabla-productos tbody tr[data-id="' + pid + '"]').length > 0) {
+      alert("Este producto ya está en el carrito.");
+      return;
+    }
 
-        const pid = option.val();
-        const nombre = option.data('nombre');
-        const marca = option.data('marca');
-        const stock = parseInt(option.data('stock'));
-        const precioVenta = parseFloat(option.data('precio-venta'));
+    const subtotal = 1 * precioVenta;
+    const fila = `
+      <tr data-id="${pid}">
+        <td>${nombre} - ${marca}<input type="hidden" name="producto_id[]" value="${pid}"></td>
+        <td>${stock}</td>
+        <td><input type="number" name="cantidad[]" class="form-control cantidad" value="1" min="1" max="${stock}"></td>
+        <td><input type="number" step="0.01" name="precio[]" class="form-control precio" value="${precioVenta.toFixed(2)}" min="0.01"></td>
+        <td class="subtotal">${subtotal.toFixed(2)}</td>
+        <td><button type="button" class="btn btn-danger btn-sm remove-row">X</button></td>
+      </tr>`;
+    $('#tabla-productos tbody').append(fila);
+    actualizarTotal();
+    $(this).val(null).trigger('change');
+  });
 
-        // Evitar agregar producto sin stock
-        if (stock <= 0) {
-            alert("No hay stock disponible para este producto.");
-            $(this).val(null).trigger('change');
-            return;
-        }
+  $(document).on('input', '.cantidad, .precio', function () {
+    const row = $(this).closest('tr');
+    const cantidad = parseFloat(row.find('.cantidad').val()) || 0;
+    const precio = parseFloat(row.find('.precio').val()) || 0;
+    const maxStock = parseInt(row.find('.cantidad').attr('max'));
+    if (cantidad > maxStock) {
+      alert("No puedes vender más de lo que hay en stock.");
+      row.find('.cantidad').val(maxStock);
+    }
+    row.find('.subtotal').text((cantidad * precio).toFixed(2));
+    actualizarTotal();
+  });
 
-        if ($('#tabla-productos tbody tr[data-id="' + pid + '"]').length > 0) {
-            alert("Este producto ya está en el carrito.");
-            return;
-        }
+  $(document).on('click', '.remove-row', function () {
+    $(this).closest('tr').remove();
+    actualizarTotal();
+  });
 
-        const subtotal = 1 * precioVenta;
-        const fila = `
-            <tr data-id="${pid}">
-                <td>${nombre} - ${marca}<input type="hidden" name="producto_id[]" value="${pid}"></td>
-                <td>${stock}</td>
-                <td><input type="number" name="cantidad[]" class="form-control cantidad" value="1" min="1" max="${stock}"></td>
-                <td><input type="number" step="0.01" name="precio[]" class="form-control precio" value="${precioVenta.toFixed(2)}" min="0.01"></td>
-                <td class="subtotal">${subtotal.toFixed(2)}</td>
-                <td><button type="button" class="btn btn-danger btn-sm remove-row">X</button></td>
-            </tr>
-        `;
-        $('#tabla-productos tbody').append(fila);
-        actualizarTotal();
-        $(this).val(null).trigger('change');
-    });
-
-    $(document).on('input', '.cantidad, .precio', function () {
-        const row = $(this).closest('tr');
-        const cantidad = parseFloat(row.find('.cantidad').val()) || 0;
-        const precio = parseFloat(row.find('.precio').val()) || 0;
-        const maxStock = parseInt(row.find('.cantidad').attr('max'));
-        if (cantidad > maxStock) { 
-            alert("No puedes vender más de lo que hay en stock."); 
-            row.find('.cantidad').val(maxStock); 
-        }
-        row.find('.subtotal').text((cantidad * precio).toFixed(2));
-        actualizarTotal();
-    });
-
-    $(document).on('click', '.remove-row', function () {
-        $(this).closest('tr').remove();
-        actualizarTotal();
-    });
+  $('#vaciar-carrito').on('click', function () {
+    if (confirm("¿Seguro que deseas vaciar el carrito?")) {
+      $('#tabla-productos tbody').empty();
+      actualizarTotal();
+    }
+  });
 });
 </script>
 {% endblock %}

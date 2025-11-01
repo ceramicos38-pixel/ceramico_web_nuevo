@@ -1,0 +1,120 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Dashboard de Ventas{% endblock %}
+
+{% block content %}
+<style>
+  body, .card, .container {
+    background-color: #121212 !important;
+    color: #eaeaea !important;
+  }
+  .dashboard-card {
+    background: #1e1e1e;
+    border: none;
+    border-radius: 12px;
+    padding: 18px;
+    text-align: center;
+  }
+  h2, h5 {
+    color: #90caf9 !important;
+  }
+</style>
+
+<div class="container mt-4">
+  <h2 class="fw-bold text-center mb-4">📊 Panel de Ventas</h2>
+
+  <!-- Tarjetas resumen -->
+  <div class="row g-3">
+    <div class="col-md-4 col-6">
+      <div class="dashboard-card shadow-sm">
+        <h6 class="text-secondary">Ventas Hoy</h6>
+        <h3 class="fw-bold text-info">{{ ventas_hoy }}</h3>
+      </div>
+    </div>
+
+    <div class="col-md-4 col-6">
+      <div class="dashboard-card shadow-sm">
+        <h6 class="text-secondary">Total Ventas</h6>
+        <h3 class="fw-bold text-warning">{{ total_ventas }}</h3>
+      </div>
+    </div>
+
+    <div class="col-md-4 col-6">
+      <div class="dashboard-card shadow-sm">
+        <h6 class="text-secondary">Stock Bajo</h6>
+        <h3 class="fw-bold text-danger">{{ productos_bajo_stock|length }}</h3>
+      </div>
+    </div>
+  </div>
+
+  <!-- Gráfico horizontal -->
+  <div class="card mt-4 shadow-sm" style="background:#1e1e1e;">
+    <div class="card-body">
+      <h5 class="fw-bold mb-3">🔥 Productos más vendidos</h5>
+      <canvas id="productosChart" height="150"></canvas>
+    </div>
+  </div>
+
+  <!-- Gráfico circular -->
+  <div class="card mt-4 shadow-sm" style="background:#1e1e1e;">
+    <div class="card-body">
+      <h5 class="fw-bold mb-3">🎯 Distribución de Ventas</h5>
+      <canvas id="donutChart" height="160"></canvas>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+
+  const productos = JSON.parse('{{ productos_json|escapejs }}');
+  const cantidades = JSON.parse('{{ cantidades_json|escapejs }}');
+
+  // Colores neon
+  const neonColors = ["#00e5ff","#ffea00","#00e676","#ff1744","#b388ff","#ff9100"];
+
+  // Gráfico barra horizontal
+  new Chart(document.getElementById("productosChart"), {
+    type: "bar",
+    data: {
+      labels: productos,
+      datasets: [{
+        label: "Cantidad vendida",
+        data: cantidades,
+        backgroundColor: neonColors,
+        borderWidth: 2
+      }]
+    },
+    options: {
+      indexAxis: "y",
+      responsive: true,
+      scales: {
+        x: { ticks: { color:"#fff" }, grid:{color:"#333"} },
+        y: { ticks: { color:"#fff" }, grid:{color:"#333"} }
+      }
+    }
+  });
+
+  // Donut
+  new Chart(document.getElementById("donutChart"), {
+    type: "doughnut",
+    data: {
+      labels: productos,
+      datasets: [{
+        data: cantidades,
+        backgroundColor: neonColors,
+        hoverOffset: 10
+      }]
+    },
+    options: {
+      plugins: {
+        legend: { labels: { color:"#fff" } }
+      }
+    }
+  });
+
+});
+</script>
+{% endblock %}

@@ -48,10 +48,18 @@
                 </thead>
                 <tbody>
                     {% for producto in productos_filtrados %}
-                    <tr>
+                    <tr class="{% if producto.obj.stock <= 3 %}table-danger{% elif producto.obj.stock <= 10 %}table-warning{% endif %}">
                         <td>{{ producto.obj.nombre }}</td>
                         <td>{{ producto.obj.marca }}</td>
-                        <td>{{ producto.obj.stock }}</td>
+                        <td>
+                            {% if producto.obj.stock <= 3 %}
+                                <span class="badge bg-danger">🔥 {{ producto.obj.stock }}</span>
+                            {% elif producto.obj.stock <= 10 %}
+                                <span class="badge bg-warning text-dark">⚠️ {{ producto.obj.stock }}</span>
+                            {% else %}
+                                <span class="badge bg-success">{{ producto.obj.stock }}</span>
+                            {% endif %}
+                        </td>
                         <td>{{ producto.obj.unidad_medida }}</td>
                         <td><strong class="text-success">S/ {{ producto.obj.precio_venta|floatformat:2 }}</strong></td>
                         <td class="d-flex flex-wrap gap-1">
@@ -107,10 +115,18 @@
                             </thead>
                             <tbody>
                                 {% for producto in productos %}
-                                <tr>
+                                <tr class="{% if producto.obj.stock <= 3 %}table-danger{% elif producto.obj.stock <= 10 %}table-warning{% endif %}">
                                     <td>{{ producto.obj.nombre }}</td>
                                     <td>{{ producto.obj.marca }}</td>
-                                    <td>{{ producto.obj.stock }}</td>
+                                    <td>
+                                        {% if producto.obj.stock <= 3 %}
+                                            <span class="badge bg-danger">🔥 {{ producto.obj.stock }}</span>
+                                        {% elif producto.obj.stock <= 10 %}
+                                            <span class="badge bg-warning text-dark">⚠️ {{ producto.obj.stock }}</span>
+                                        {% else %}
+                                            <span class="badge bg-success">{{ producto.obj.stock }}</span>
+                                        {% endif %}
+                                    </td>
                                     <td>{{ producto.obj.unidad_medida }}</td>
                                     <td><strong class="text-success">S/ {{ producto.obj.precio_venta|floatformat:2 }}</strong></td>
                                     <td class="d-flex flex-wrap gap-1">
@@ -132,8 +148,5 @@
         </div>
     {% endif %}
 
-    <div class="alert alert-info mt-4 shadow rounded">
-        <strong>Valor Total del Inventario:</strong> S/ {{ valor_total_inventario|floatformat:2 }}
-    </div>
 </div>
 {% endblock %}

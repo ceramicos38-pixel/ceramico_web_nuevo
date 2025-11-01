@@ -2,8 +2,8 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.forms import modelform_factory, inlineformset_factory
 from django.urls import reverse
 from django.contrib import messages
-from .forms import ProductoForm, SaleForm, SaleItemForm
-from .models import Producto, Categoria, Cliente, Sale, SaleItem, Caja
+from .forms import ProductoForm, VentaForm, DetalleVentaForm
+from .models import Producto, Categoria, Cliente, Venta, DetalleVenta, Caja
 from decimal import Decimal
 from django.db.models import Sum
 from django.utils.timezone import now
@@ -53,14 +53,14 @@ def historial_caja(request):
 @login_required
 def cerrar_caja_periodo(request, periodo, valor):
     if periodo == "dia":
-        ventas = Sale.objects.filter(fecha__date=valor)
+        ventas = Venta.objects.filter(fecha__date=valor)
     elif periodo == "mes":
         year, month = valor.split("-")
-        ventas = Sale.objects.filter(fecha__year=year, fecha__month=month)
+        ventas = Venta.objects.filter(fecha__year=year, fecha__month=month)
     elif periodo == "anio":
-        ventas = Sale.objects.filter(fecha__year=valor)
+        ventas = Venta.objects.filter(fecha__year=valor)
     else:
-        ventas = Sale.objects.none()
+        ventas = Venta.objects.none()
 
     total = ventas.aggregate(Sum("total"))["total"] or 0
 
@@ -81,11 +81,11 @@ def cerrar_caja_periodo(request, periodo, valor):
 # -----------------------------
 # Ventas
 # -----------------------------
-SaleForm = modelform_factory(Sale, fields=['cliente', 'tipo_comprobante'])
+VentaForm = modelform_factory(Venta, fields=['cliente', 'tipo_comprobante'])
 SaleItemFormSet = inlineformset_factory(
-    Sale,
-    SaleItem,
-    form=SaleItemForm,
+    Venta,
+    DetalleVenta,
+    form=DetalleVentaForm,
     fields=('producto', 'cantidad', 'precio'),
     extra=1,
     can_delete=True
@@ -94,7 +94,7 @@ SaleItemFormSet = inlineformset_factory(
 
 @login_required
 def listar_ventas(request):
-    ventas = Sale.objects.all().order_by('-fecha')
+    ventas = Venta.objects.all().order_by('-fecha')
 
     # Filtros por fecha
     fecha_inicio = request.GET.get('fecha_inicio')
@@ -136,7 +136,7 @@ def registrar_venta(request):
             return redirect('ventas_nueva')
 
         cliente_obj, _ = Cliente.objects.get_or_create(nombre=cliente_nombre)
-        venta = Sale.objects.create(cliente=cliente_obj, tipo_comprobante=tipo_comprobante, total=Decimal("0.00"))
+        venta = Venta.objects.create(cliente=cliente_obj, tipo_comprobante=tipo_comprobante, total=Decimal("0.00"))
 
         total_venta = Decimal("0.00")
 
@@ -159,7 +159,7 @@ def registrar_venta(request):
             subtotal = cantidad * precio
             total_venta += subtotal
 
-            SaleItem.objects.create(sale=venta, producto=producto, cantidad=cantidad, precio=precio)
+            DetalleVenta.objects.create(sale=venta, producto=producto, cantidad=cantidad, precio=precio)
             producto.stock -= cantidad
             producto.save()
 
@@ -177,13 +177,13 @@ def registrar_venta(request):
 
 
 def smartclick_redirect(request, sale_id):
-    sale = get_object_or_404(Sale, id=sale_id)
+    sale = get_object_or_404(Venta, id=sale_id)
     return redirect('/ventas/')  # Ajusta según tu flujo
 
 
 def nota_venta(request, sale_id):
-    sale = get_object_or_404(Sale, id=sale_id)
-    items = SaleItem.objects.filter(sale=sale)
+    sale = get_object_or_404(Venta, id=sale_id)
+    items = DetalleVenta.objects.filter(sale=sale)
 
     items_con_subtotal = []
     total = Decimal("0.00")

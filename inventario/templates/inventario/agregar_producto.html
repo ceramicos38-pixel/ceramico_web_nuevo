@@ -4,7 +4,8 @@
 
 {% block content %}
 <div class="container mt-4">
-  <h2>Agregar Producto</h2>
+  <h2 class="mb-3">Agregar Producto</h2>
+  <p class="text-muted">Completa los datos del producto.</p>
   <hr>
 
   <form method="post" novalidate>
@@ -13,7 +14,7 @@
     <!-- Nombre -->
     <div class="mb-3">
       <label class="form-label">Nombre</label>
-      {% render_field form.nombre class="form-control" placeholder="Ej: Cemento Portland" %}
+      {% render_field form.nombre class="form-control" %}
       {% if form.nombre.errors %}
         <div class="text-danger small">{{ form.nombre.errors }}</div>
       {% endif %}
@@ -22,7 +23,7 @@
     <!-- Marca -->
     <div class="mb-3">
       <label class="form-label">Marca</label>
-      {% render_field form.marca class="form-control" placeholder="Ej: Sol" %}
+      {% render_field form.marca class="form-control" %}
       {% if form.marca.errors %}
         <div class="text-danger small">{{ form.marca.errors }}</div>
       {% endif %}
@@ -37,16 +38,16 @@
       {% endif %}
     </div>
 
-    <!-- Unidad de medida / Formato -->
+    <!-- Formato / Unidad de medida -->
     <div class="mb-3">
       <label class="form-label">Formato / Unidad de medida</label>
-      {% render_field form.unidad_medida class="form-control" placeholder="Ej: 30x60, unidad, kg" %}
+      {% render_field form.unidad_medida class="form-control" %}
       {% if form.unidad_medida.errors %}
         <div class="text-danger small">{{ form.unidad_medida.errors }}</div>
       {% endif %}
     </div>
 
-    <!-- Precio -->
+    <!-- Precio de Venta -->
     <div class="mb-3">
       <label class="form-label">Precio de Venta (S/)</label>
       {% render_field form.precio_venta class="form-control" %}
@@ -64,26 +65,17 @@
       {% endif %}
     </div>
 
-    <!-- Vendidos -->
-    <div class="mb-3">
-      <label class="form-label">Vendidos</label>
-      {% render_field form.vendidos class="form-control" value="0" %}
-      {% if form.vendidos.errors %}
-        <div class="text-danger small">{{ form.vendidos.errors }}</div>
-      {% endif %}
-    </div>
-
     <!-- Proveedor -->
     <div class="mb-3">
       <label class="form-label">Proveedor</label>
-      {% render_field form.proveedor class="form-control" placeholder="Nombre del proveedor" %}
+      {% render_field form.proveedor class="form-control" %}
       {% if form.proveedor.errors %}
         <div class="text-danger small">{{ form.proveedor.errors }}</div>
       {% endif %}
     </div>
 
     <!-- Botones -->
-    <div class="d-flex justify-content-between">
+    <div class="d-flex justify-content-between mt-4">
       <a href="{% url 'lista_productos' %}" class="btn btn-secondary">Cancelar</a>
       <button type="submit" class="btn btn-primary">Guardar Producto</button>
     </div>

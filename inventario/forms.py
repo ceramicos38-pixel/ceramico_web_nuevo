@@ -1,5 +1,5 @@
 from django import forms
-from .models import Producto, Categoria, Cliente, Sale, SaleItem
+from .models import Producto, Categoria, Cliente, Venta, DetalleVenta
 from decimal import Decimal
 
 # --------------------------
@@ -8,62 +8,74 @@ from decimal import Decimal
 class ProductoForm(forms.ModelForm):
     class Meta:
         model = Producto
-        # ✅ Solo dejamos los campos que realmente existen en el modelo
-        fields = ['nombre', 'marca', 'categoria', 'stock', 'unidad_medida', 'precio_venta', 'proveedor']
+        # Todos los campos salvo 'vendidos'
+        fields = [
+            'nombre',
+            'marca',
+            'categoria',
+            'unidad_medida',
+            'precio_venta',
+            'stock',
+            'proveedor'
+        ]
         labels = {
             'nombre': 'Nombre',
             'marca': 'Marca',
             'categoria': 'Categoría',
-            'stock': 'Stock',
-            'unidad_medida': 'U.M.',
+            'unidad_medida': 'Formato / U.M.',
             'precio_venta': 'Precio de Venta (S/)',
+            'stock': 'Stock',
             'proveedor': 'Proveedor',
         }
         widgets = {
             'nombre': forms.TextInput(attrs={
                 'class': 'form-control',
-                'placeholder': 'Ej: Cemento Portland'
+                'placeholder': 'Ej: Anillo de cera'
             }),
             'marca': forms.TextInput(attrs={
                 'class': 'form-control',
-                'placeholder': 'Ej: Sol'
+                'placeholder': 'Ej: Magnum'
             }),
             'categoria': forms.Select(attrs={
-                'class': 'form-control'
+                'class': 'form-select'
             }),
-            'stock': forms.NumberInput(attrs={
+            'unidad_medida': forms.TextInput(attrs={
                 'class': 'form-control',
-                'min': '0',
-                'step': '1'
-            }),
-            'unidad_medida': forms.Select(attrs={
-                'class': 'form-control'
+                'placeholder': 'Ej: Unidad, kg, m2, 30x60'
             }),
             'precio_venta': forms.NumberInput(attrs={
                 'class': 'form-control',
                 'min': '0',
-                'step': '0.01'
+                'step': '0.01',
+                'placeholder': 'Ej: 25.50'
+            }),
+            'stock': forms.NumberInput(attrs={
+                'class': 'form-control',
+                'min': '0',
+                'step': '1',
+                'placeholder': 'Ej: 10'
             }),
             'proveedor': forms.TextInput(attrs={
                 'class': 'form-control',
-                'placeholder': 'Ej: Ferretería San Juan'
+                'placeholder': 'Ej: Nombre del proveedor'
             }),
         }
+
 
 # --------------------------
 # FORMULARIO VENTA
 # --------------------------
-class SaleForm(forms.ModelForm):
+class VentaForm(forms.ModelForm):
     class Meta:
-        model = Sale
+        model = Venta
         fields = ['cliente', 'tipo_comprobante']  # el total se calcula solo
 
 # --------------------------
 # FORMULARIO ITEM DE VENTA
 # --------------------------
-class SaleItemForm(forms.ModelForm):
+class DetalleVentaForm(forms.ModelForm):
     class Meta:
-        model = SaleItem
+        model = DetalleVenta
         fields = ['producto', 'cantidad', 'precio']
 
     def __init__(self, *args, **kwargs):
