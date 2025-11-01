@@ -161,6 +161,3 @@ if not DEBUG:
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
 
-import os
-if os.environ.get("RENDER"):
-    import auto_create_superuser
