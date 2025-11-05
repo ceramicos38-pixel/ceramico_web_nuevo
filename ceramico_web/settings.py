@@ -27,6 +27,9 @@ DEBUG = os.getenv('DJANGO_DEBUG', 'True') == 'True'
 # ✅ Variable para detectar Render sin romper el proyecto
 RENDER = os.environ.get('RENDER', 'false').lower() in ('true', '1', 'yes')
 
+# ✅ Contraseña maestra para login único
+MASTER_LOGIN_PASSWORD = os.getenv('MASTER_LOGIN_PASSWORD', 'evelyn2025')
+
 ALLOWED_HOSTS = os.environ.get(
     "DJANGO_ALLOWED_HOSTS",
     "localhost,127.0.0.1,ceramico-web.onrender.com"
@@ -58,7 +61,7 @@ INSTALLED_APPS = [
 # -----------------------------
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',  
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
