@@ -92,7 +92,7 @@
   <img src="{% static 'img/logo1.png' %}" alt="Logo del sistema">
 
   <h2>🔐 Acceso al Sistema</h2>
-  <p>Ingrese la contraseña maestra para continuar</p>
+  <p>Ingrese sus credenciales para continuar</p>
 
   {% if messages %}
     {% for message in messages %}
@@ -106,125 +106,8 @@
   {% block content %}
   <form method="post" autocomplete="off">
     {% csrf_token %}
-    <input type="password" name="password" class="form-control mb-3" placeholder="Contraseña" required autofocus>
-
-    <button type="submit" class="btn btn-neon w-100 mb-3">Ingresar</button>
-  </form>
-  {% endblock %}
-</div>
-
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-</body>
-</html>
-{% load static %}
-<!DOCTYPE html>
-<html lang="es">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>{% block title %}Ferretería Construction Center - Acceso{% endblock %}</title>
-
-  <!-- Google Fonts -->
-  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&display=swap" rel="stylesheet">
-
-  <!-- Bootstrap CSS -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-
-  <style>
-    body {
-      margin: 0;
-      padding: 0;
-      font-family: 'Orbitron', sans-serif;
-      background: linear-gradient(135deg, #0077b6, #00b4d8);
-      height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-    }
-
-    .login-card {
-      background: #fff;
-      padding: 40px 30px;
-      border-radius: 20px;
-      box-shadow: 0 10px 40px rgba(0,0,0,0.25);
-      width: 100%;
-      max-width: 420px;
-      text-align: center;
-      animation: fadeIn 1s ease-in-out;
-    }
-
-    .login-card img {
-      max-width: 200px;
-      margin-bottom: 15px;
-    }
-
-    .login-card h2 {
-      color: #0077b6;
-      font-weight: 700;
-      margin-bottom: 10px;
-    }
-
-    .login-card p {
-      color: #444;
-      margin-bottom: 25px;
-      font-size: 14px;
-    }
-
-    .form-control {
-      border-radius: 12px;
-      border: 1px solid #ccc;
-      padding: 12px;
-      font-size: 14px;
-    }
-
-    .form-control:focus {
-      border-color: #00b4d8;
-      box-shadow: 0 0 6px rgba(0, 180, 216, 0.5);
-    }
-
-    .btn-neon {
-      background: #00b4d8;
-      color: #fff;
-      border-radius: 12px;
-      font-weight: 700;
-      text-transform: uppercase;
-      padding: 12px;
-      transition: all 0.3s ease;
-      border: none;
-    }
-
-    .btn-neon:hover {
-      background: #0077b6;
-      box-shadow: 0 6px 20px rgba(0, 119, 182, 0.5);
-    }
-
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(-20px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-  </style>
-</head>
-<body>
-
-<div class="login-card">
-  <img src="{% static 'img/logo1.png' %}" alt="Logo del sistema">
-
-  <h2>🔐 Acceso al Sistema</h2>
-  <p>Ingrese la contraseña maestra para continuar</p>
-
-  {% if messages %}
-    {% for message in messages %}
-      <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
-        {{ message }}
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-      </div>
-    {% endfor %}
-  {% endif %}
-
-  {% block content %}
-  <form method="post" autocomplete="off">
-    {% csrf_token %}
-    <input type="password" name="password" class="form-control mb-3" placeholder="Contraseña" required autofocus>
+    <input type="text" name="username" class="form-control mb-3" placeholder="Usuario" required autofocus>
+    <input type="password" name="password" class="form-control mb-3" placeholder="Contraseña" required>
 
     <button type="submit" class="btn btn-neon w-100 mb-3">Ingresar</button>
   </form>
