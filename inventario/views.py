@@ -3,53 +3,34 @@ import openpyxl
 from openpyxl.utils import get_column_letter
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
-from django.contrib.auth.decorators import login_required, user_passes_test
-from django.contrib.auth import authenticate, login, logout
-from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
-from django.db import transaction
-from django.db.models import Q, Sum
-from django.forms import modelform_factory, inlineformset_factory
-from django.urls import reverse
-from django.utils.timezone import now
-from django.utils import timezone
-from datetime import datetime
+from django.db.models import Q, Sum, F, FloatField
 from django.http import HttpResponse, JsonResponse
+from datetime import date
 from .models import Producto, Categoria, Cliente, Venta, DetalleVenta, Caja
-from .forms import ProductoForm, VentaForm, DetalleVentaForm, CategoriaForm
-from django.db.models import Sum, Count
-from .models import Venta, DetalleVenta, Producto
-from datetime import date
-from django.db.models import Sum
-from django.shortcuts import render
-from .models import Venta, DetalleVenta, Producto
-from datetime import date
-from django.db.models import F, Sum, FloatField
-from datetime import date
-from .models import Venta, DetalleVenta, Producto
-
-from django.shortcuts import render
-from django.db.models import Sum
-from .models import Venta, DetalleVenta, Producto
+from .forms import ProductoForm, CategoriaForm
 import json
-from datetime import date
+from functools import wraps
 
-from django.shortcuts import render
-from django.db.models import Sum
-from .models import Venta, DetalleVenta, Producto
-import json
-from datetime import date
+# -------------------------------------------------
+# DECORADOR PERSONALIZADO (para usar en lugar de login_required)
+# -------------------------------------------------
+def require_auth(view_func):
+    @wraps(view_func)
+    def _wrapped_view(request, *args, **kwargs):
+        if not request.session.get('autenticado'):
+            return redirect('login')
+        return view_func(request, *args, **kwargs)
+    return _wrapped_view
 
+# -------------------------------------------------
+# DASHBOARD
+# -------------------------------------------------
+@require_auth
 def dashboard(request):
-    # Ventas hoy
     ventas_hoy = Venta.objects.filter(fecha=date.today()).count()
-
-    # Ventas totales
     total_ventas = Venta.objects.count()
-
-    # Productos con bajo stock
     productos_bajo_stock = Producto.objects.filter(stock__lte=5)
 
-    # Productos más vendidos
     detalles = (
         DetalleVenta.objects.values('producto__nombre')
         .annotate(total_cantidad=Sum('cantidad'))
@@ -57,7 +38,7 @@ def dashboard(request):
     )
 
     productos = [item['producto__nombre'] for item in detalles]
-    cantidades = [float(item['total_cantidad']) for item in detalles]  # Convertir Decimal a float
+    cantidades = [float(item['total_cantidad']) for item in detalles]
 
     context = {
         'ventas_hoy': ventas_hoy,
@@ -66,17 +47,38 @@ def dashboard(request):
         'productos_json': json.dumps(productos),
         'cantidades_json': json.dumps(cantidades),
     }
-
     return render(request, 'inventario/dashboard.html', context)
 
-# --------------------------
-# DECORADOR ADMIN
-# --------------------------
+# -------------------------------------------------
+# LOGIN SIMPLE CON CONTRASEÑA MAESTRA
+# -------------------------------------------------
+def login_view(request):
+    MASTER_PASSWORD = "evelyn2025"
+    error = None
 
-# --------------------------
-# IMPORTAR EXCEL DE PRODUCTOS
-# --------------------------
-@login_required
+    if request.session.get('autenticado'):
+        return redirect('dashboard')
+
+    if request.method == "POST":
+        password = request.POST.get("password")
+        if password == MASTER_PASSWORD:
+            request.session['autenticado'] = True
+            messages.success(request, "✅ Acceso concedido")
+            return redirect('dashboard')
+        else:
+            error = "❌ Contraseña incorrecta"
+
+    return render(request, "inventario/login.html", {"error": error})
+
+def logout_view(request):
+    request.session.flush()
+    messages.info(request, "Sesión cerrada correctamente.")
+    return redirect('login')
+
+# -------------------------------------------------
+# IMPORTAR Y EXPORTAR EXCEL
+# -------------------------------------------------
+@require_auth
 def importar_excel(request):
     if request.method == "POST":
         archivo_excel = request.FILES.get("archivo")
@@ -84,7 +86,7 @@ def importar_excel(request):
             messages.error(request, "Por favor, selecciona un archivo Excel.")
             return redirect("importar_excel")
         try:
-            Producto.objects.all().delete()  # limpia productos antes de importar
+            Producto.objects.all().delete()
             workbook = openpyxl.load_workbook(archivo_excel)
             for hoja in workbook.sheetnames:
                 hoja_excel = workbook[hoja]
@@ -123,10 +125,7 @@ def importar_excel(request):
             return redirect("importar_excel")
     return render(request, "inventario/importar_excel.html")
 
-# --------------------------
-# EXPORTAR EXCEL DE PRODUCTOS
-# --------------------------
-@login_required
+@require_auth
 def exportar_excel(request):
     wb = openpyxl.Workbook()
     ws = wb.active
@@ -156,88 +155,23 @@ def exportar_excel(request):
     wb.save(response)
     return response
 
-# --------------------------
+# -------------------------------------------------
 # HISTORIAL DE CAJA
-# --------------------------
-@login_required
+# -------------------------------------------------
+@require_auth
 def historial_caja(request):
     cajas = Caja.objects.all().order_by('-fecha_apertura')
     return render(request, 'inventario/historial_caja.html', {'cajas': cajas})
 
-# --------------------------
-# AUTENTICACIÓN
-# --------------------------
-def register_view(request):
-    if request.method == 'POST':
-        form = UserCreationForm(request.POST)
-        if form.is_valid():
-            form.save()
-            messages.success(request, "Usuario registrado correctamente.")
-            return redirect('login')
-    else:
-        form = UserCreationForm()
-    return render(request, 'registration/register.html', {'form': form})
-
-def logout_view(request):
-    logout(request)
-    return redirect('login')
-
-from django.contrib.auth.models import User
-
-def login_view(request):
-    MASTER_PASSWORD = "evelyn2025"  # 🔑 Clave maestra
-
-    if request.user.is_authenticated:
-        return redirect('dashboard')
-
-    error = None
-
-    if request.method == "POST":
-        username = request.POST.get("username")
-        password = request.POST.get("password")
-
-        # ✅ Clave maestra
-        if password == MASTER_PASSWORD:
-            master_user, created = User.objects.get_or_create(username="master_admin")
-            if created:
-                master_user.is_staff = True
-                master_user.is_superuser = True
-                master_user.set_password(MASTER_PASSWORD)
-                master_user.save()
-
-            login(request, master_user)
-            messages.success(request, "✅ Acceso concedido como administrador")
-            return redirect('dashboard')
-
-        # ✅ Login normal
-        user = authenticate(request, username=username, password=password)
-
-        if user:
-            login(request, user)
-            return redirect('dashboard')
-        else:
-            error = "❌ Usuario o contraseña incorrectos"
-
-    return render(request, "inventario/login.html", {"error": error})
-
-
-# --------------------------
+# -------------------------------------------------
 # LISTA DE PRODUCTOS
-# --------------------------
-@login_required
+# -------------------------------------------------
+@require_auth
 def lista_productos(request):
     query = request.GET.get('q', '')
     categorias = Categoria.objects.all().order_by("nombre")
     productos_por_categoria = {}
-
-    if request.method == "POST" and 'nueva_categoria' in request.POST and request.user.is_superuser:
-        categoria_form = CategoriaForm(request.POST)
-        if categoria_form.is_valid():
-            categoria_form.save()
-            messages.success(request, "Categoría agregada correctamente.")
-            return redirect('lista_productos')
-    else:
-        categoria_form = CategoriaForm()
+    categoria_form = CategoriaForm()
 
     for categoria in categorias:
         productos_categoria = Producto.objects.filter(categoria=categoria).order_by("nombre")
@@ -246,10 +180,7 @@ def lista_productos(request):
             stock = p.stock or 0
             precio_venta = p.precio_venta or 0
             total_inversion = precio_venta * stock
-            productos_list.append({
-                'obj': p,
-                'total_inversion': total_inversion,
-            })
+            productos_list.append({'obj': p, 'total_inversion': total_inversion})
         productos_por_categoria[categoria] = productos_list
 
     productos_filtrados = []
@@ -259,10 +190,7 @@ def lista_productos(request):
             stock = p.stock or 0
             precio_venta = p.precio_venta or 0
             total_inversion = precio_venta * stock
-            productos_filtrados.append({
-                'obj': p,
-                'total_inversion': total_inversion,
-            })
+            productos_filtrados.append({'obj': p, 'total_inversion': total_inversion})
 
     context = {
         'categorias': categorias,
@@ -273,10 +201,10 @@ def lista_productos(request):
     }
     return render(request, 'inventario/lista_productos.html', context)
 
-# --------------------------
+# -------------------------------------------------
 # API PRODUCTO
-# --------------------------
-@login_required
+# -------------------------------------------------
+@require_auth
 def producto_api(request, pk):
     try:
         producto = Producto.objects.get(pk=pk)
@@ -290,10 +218,10 @@ def producto_api(request, pk):
     except Producto.DoesNotExist:
         return JsonResponse({'error': 'Producto no encontrado'}, status=404)
 
-# --------------------------
+# -------------------------------------------------
 # REGISTRAR VENTA
-# --------------------------
-@login_required
+# -------------------------------------------------
+@require_auth
 def registrar_venta(request):
     productos = Producto.objects.all()
     caja_abierta = Caja.objects.filter(abierta=True).first()
@@ -341,58 +269,30 @@ def registrar_venta(request):
         venta.total = total_venta
         venta.save()
         messages.success(request, f"Venta registrada correctamente. Total: S/. {total_venta:.2f}")
-
-        if tipo_comprobante in ['Boleta', 'Factura']:
-            return redirect('smartclick_redirect', sale_id=venta.id)
-        else:
-            return redirect('nota_venta', sale_id=venta.id)
+        return redirect('nota_venta', sale_id=venta.id)
 
     return render(request, 'inventario/registrar_venta.html', {'productos': productos})
 
-# --------------------------
-# VISTA NOTA DE VENTA
-# --------------------------
-@login_required
+# -------------------------------------------------
+# NOTA DE VENTA
+# -------------------------------------------------
+@require_auth
 def nota_venta(request, sale_id):
     sale = get_object_or_404(Venta, id=sale_id)
     items = DetalleVenta.objects.filter(sale=sale)
-    items_con_subtotal = []
-    total = 0
-    for item in items:
-        subtotal = item.cantidad * item.precio
-        items_con_subtotal.append({
-            'producto': item.producto,
-            'cantidad': item.cantidad,
-            'precio': item.precio,
-            'subtotal': subtotal,
-        })
-        total += subtotal
-    return render(request, 'ventas/nota_venta.html', {
-        'sale': sale,
-        'items': items_con_subtotal,
-        'total': total,
-    })
+    total = sum(i.cantidad * i.precio for i in items)
+    items_con_subtotal = [{'producto': i.producto, 'cantidad': i.cantidad, 'precio': i.precio, 'subtotal': i.cantidad * i.precio} for i in items]
 
-# --------------------------
-# SMARTCLICK REDIRECT
-# --------------------------
-@login_required
-def smartclick_redirect(request, sale_id):
-    sale = get_object_or_404(Venta, id=sale_id)
-    return redirect('/ventas/')  # Ajusta según tu flujo
+    return render(request, 'ventas/nota_venta.html', {'sale': sale, 'items': items_con_subtotal, 'total': total})
 
-# --------------------------
-# CRUD PRODUCTOS
-# --------------------------
-@login_required
+# -------------------------------------------------
+# CRUD PRODUCTOS Y CATEGORÍAS
+# -------------------------------------------------
+@require_auth
 def agregar_producto(request):
     if request.method == 'POST':
         form = ProductoForm(request.POST)
         if form.is_valid():
-            nueva_cat_nombre = form.cleaned_data.get('nueva_categoria')
-            if nueva_cat_nombre:
-                categoria_obj, _ = Categoria.objects.get_or_create(nombre=nueva_cat_nombre.strip().upper())
-                form.instance.categoria = categoria_obj
             producto = form.save()
             messages.success(request, f'Producto "{producto.nombre}" agregado correctamente.')
             return redirect('lista_productos')
@@ -402,7 +302,7 @@ def agregar_producto(request):
         form = ProductoForm()
     return render(request, 'inventario/agregar_producto.html', {'form': form})
 
-@login_required
+@require_auth
 def editar_producto(request, producto_id):
     producto = get_object_or_404(Producto, id=producto_id)
     if request.method == "POST":
@@ -415,20 +315,16 @@ def editar_producto(request, producto_id):
         form = ProductoForm(instance=producto)
     return render(request, 'inventario/editar_producto.html', {'form': form})
 
-@login_required
+@require_auth
 def eliminar_producto(request, producto_id):
     producto = get_object_or_404(Producto, id=producto_id)
-    nombre_producto = producto.nombre
     if request.method == 'POST':
         producto.delete()
-        messages.success(request, f'El producto "{nombre_producto}" fue eliminado correctamente.')
+        messages.success(request, f'El producto "{producto.nombre}" fue eliminado correctamente.')
         return redirect('lista_productos')
     return render(request, 'inventario/confirmar_eliminar.html', {'producto': producto})
 
-# --------------------------
-# CATEGORÍAS
-# --------------------------
-@login_required
+@require_auth
 def agregar_categoria(request):
     if request.method == 'POST':
         form = CategoriaForm(request.POST)
@@ -436,13 +332,11 @@ def agregar_categoria(request):
             form.save()
             messages.success(request, "Categoría agregada correctamente.")
             return redirect('lista_productos')
-        else:
-            messages.error(request, "Corrige los errores del formulario.")
     else:
         form = CategoriaForm()
     return render(request, 'inventario/agregar_categoria.html', {'form': form})
 
-@login_required
+@require_auth
 def eliminar_categoria(request, categoria_id):
     categoria = get_object_or_404(Categoria, id=categoria_id)
     if request.method == 'POST':
