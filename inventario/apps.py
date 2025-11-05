@@ -6,8 +6,8 @@ class InventarioConfig(AppConfig):
     name = 'inventario'
 
     def ready(self):
-        # Solo crear superusuario en Render
-        if settings.DEBUG is False and settings.RENDER:
+        # Solo crear superusuario en producción (Render)
+        if not settings.DEBUG and getattr(settings, 'RENDER', False):
             from django.contrib.auth.models import User
             try:
                 if not User.objects.filter(username="ADMIN").exists():
@@ -16,6 +16,7 @@ class InventarioConfig(AppConfig):
                         email="admin@ceramico.com",
                         password="evelyn2025"
                     )
-                    print("✅ Superusuario creado automáticamente")
-            except:
+                    print("✅ Superusuario creado automáticamente en Render")
+            except Exception as e:
+                print("⚠️ Error creando superusuario automático:", e)
                 pass

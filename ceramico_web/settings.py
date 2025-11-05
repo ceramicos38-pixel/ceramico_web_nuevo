@@ -24,6 +24,9 @@ SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'evelyn2025')
 # Si la variable DJANGO_DEBUG no existe, será True por defecto
 DEBUG = os.getenv('DJANGO_DEBUG', 'True') == 'True'
 
+# ✅ Variable para detectar Render sin romper el proyecto
+RENDER = os.environ.get('RENDER', 'false').lower() in ('true', '1', 'yes')
+
 ALLOWED_HOSTS = os.environ.get(
     "DJANGO_ALLOWED_HOSTS",
     "localhost,127.0.0.1,ceramico-web.onrender.com"
@@ -37,17 +40,16 @@ if "RENDER_EXTERNAL_HOSTNAME" in os.environ:
 # APLICACIONES INSTALADAS
 # -----------------------------
 INSTALLED_APPS = [
-    # Componentes principales de Django
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
-    # Aplicación propia
+    # App propia
     'inventario',
 
-    # Librerías de terceros
+    # Librerías extras
     'widget_tweaks',
 ]
 
@@ -56,7 +58,7 @@ INSTALLED_APPS = [
 # -----------------------------
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',  # Para archivos estáticos en Render
+    'whitenoise.middleware.WhiteNoiseMiddleware',  
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -66,7 +68,7 @@ MIDDLEWARE = [
 ]
 
 # -----------------------------
-# URLs Y WSGI
+# URLs y WSGI
 # -----------------------------
 ROOT_URLCONF = 'ceramico_web.urls'
 WSGI_APPLICATION = 'ceramico_web.wsgi.application'
@@ -155,9 +157,9 @@ DATA_UPLOAD_MAX_NUMBER_FIELDS = 10000
 CSRF_TRUSTED_ORIGINS = [
     "https://*.onrender.com",
 ]
+
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
 if not DEBUG:
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
-
